@@ -1,7 +1,7 @@
 {
   "shell-version": ["45", "46", "47"],
   "uuid": "unite@hardpixel.eu",
-  "url": "https://github.com/hardpixel/unite-shell",
+  "url": "https://github.com/ilya-m32/unite-shell",
   "settings-schema": "org.gnome.shell.extensions.unite",
   "gettext-domain": "unite",
   "version": 79,

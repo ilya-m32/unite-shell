@@ -186,9 +186,9 @@ class WindowButtons extends Handlers.Feature {
     this.signals  = new Handlers.Signals()
     this.settings = new Handlers.Settings()
     this.styles   = new Handlers.Styles()
-    this.controls = new Buttons.WindowControls()
     this.themes   = new Theme.WindowControlsThemes()
     this.theme    = this.themes.default
+    this.controls = new Buttons.WindowControls(this.theme)
     this.isDark   = true
 
     this.signals.connect(
@@ -308,12 +308,21 @@ class WindowButtons extends Handlers.Feature {
   }
 
   _onThemeChange() {
-    this.controls.remove_style_class_name(this.theme.uuid)
+    const newTheme = this.themes.locate(this.themeName, this.gtkTheme)
+    const shouldUpdateTheme = !this.theme || this.theme.uuid !== newTheme.uuid
 
-    this.theme = this.themes.locate(this.themeName, this.gtkTheme)
+    this.theme = newTheme
     this.styles.addShellStyle('windowButtons', this.theme.getStyle(this.isDark))
 
-    this.controls.add_style_class_name(this.theme.uuid)
+    this.controls.setControlThemeParams({
+      iconScaleWorkaround: this.theme.iconScaleWorkaround,
+      action_icons: this.theme.getActionIcons(),
+    })
+
+    // We need to re-create elements on theme change because the element composition can be different
+    if (shouldUpdateTheme) {
+      this._onLayoutChange()
+    }
   }
 
   _onPanelStyleChange() {
