@@ -100,15 +100,52 @@ var WindowControls = GObject.registerClass(
 
       this.add_style_class_name('window-controls')
       this.remove_style_class_name('panel-button')
+      this._theme_uuid = null; // better fallback?
+    }
+
+    setTheme(uuid) {
+      // Removing old theme if any
+      this._theme_uuid && this.remove_style_class_name(this._theme_uuid)
+
+      if (typeof uuid !== 'string') {
+        throw Error('theme uuid should be a string')
+      }
+
+      let themeChanged = false;
+      if (this._theme_uuid !== uuid) {
+        // Setting new one
+        this._theme_uuid = uuid;
+        this.add_style_class_name(this._theme_uuid)
+        themeChanged = true;
+      }
+
+      return { themeChanged };
+    }
+
+    // This is obviously not a solution, just a hacky demostration
+    isNativeIconThemeEnabled() {
+      return this._theme_uuid === 'symbolic';
     }
 
     _addButton(action) {
       const pos = Clutter.ActorAlign.CENTER
-      const bin = new St.Bin({ style_class: 'icon', x_align: pos, y_align: pos })
       const btn = new St.Button({ track_hover: true })
 
       btn.add_style_class_name(`window-button ${action}`)
-      btn.add_actor(bin)
+
+      // Temporary example hack to bypass background-image scaling issue
+      if (this.isNativeIconThemeEnabled()) {
+        const icon = new St.Icon({
+            x_align: pos,
+            y_align: pos,
+            style_class: 'icon',
+            icon_name: `window-${action}-symbolic`,
+          })
+        btn.add_actor(icon)
+      } else {
+        const bin = new St.Bin({ style_class: 'icon', x_align: pos, y_align: pos })
+        btn.add_actor(bin)
+      }
 
       btn.connect('clicked', () => {
         const target = global.unite.focusWindow

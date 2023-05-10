@@ -1,0 +1,15 @@
+.window-button .icon {
+  width: 24px;
+  height: 24px;
+}
+.maximize .icon,
+.minimize .icon,
+.close .icon {
+  color: #fff;
+}
+
+.maximize:hover .icon,
+.minimize:hover .icon,
+.close:hover .icon {
+  color: #ed333b;
+}

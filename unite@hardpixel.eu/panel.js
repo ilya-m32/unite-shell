@@ -150,12 +150,12 @@ var WindowButtons = class WindowButtons extends Handlers.Feature {
   }
 
   _onThemeChange() {
-    this.controls.remove_style_class_name(this.theme.uuid)
-
     this.theme = this.themes.locate(this.themeName, this.gtkTheme)
     this.styles.addShellStyle('windowButtons', this.theme.getStyle(this.isDark))
 
-    this.controls.add_style_class_name(this.theme.uuid)
+    const { themeChanged } = this.controls.setTheme(this.theme.uuid);
+    // We need to re-create elements, as composition can be different
+    themeChanged && this._onLayoutChange();
   }
 
   _onPanelStyleChange() {
