@@ -1,6 +1,7 @@
 import GObject from 'gi://GObject'
 import St from 'gi://St'
 import Clutter from 'gi://Clutter'
+import Gio from 'gi://Gio'
 import { AppMenu } from 'resource:///org/gnome/shell/ui/appMenu.js'
 import * as Main from 'resource:///org/gnome/shell/ui/main.js'
 import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js'
@@ -186,15 +187,41 @@ export const WindowControls = GObject.registerClass(
 
       this.add_style_class_name('window-controls')
       this.remove_style_class_name('panel-button')
+      this._iconScaleWorkaround = false;
+    }
+
+    setControlThemeParams(params) {
+      this._iconScaleWorkaround = params.iconScaleWorkaround || false
+      this.action_icons = params.action_icons
     }
 
     _addButton(action) {
       const pos = Clutter.ActorAlign.CENTER
-      const bin = new St.Bin({ style_class: 'icon', x_align: pos, y_align: pos })
       const btn = new St.Button({ track_hover: true })
 
       btn.add_style_class_name(`window-button ${action}`)
-      btn.set_child(bin)
+
+      // A workaround for multi-scaling setups https://github.com/hardpixel/unite-shell/issues/106
+      if (this._iconScaleWorkaround) {
+        const gicons = this.action_icons[action];
+        const icon = new St.Icon({
+          x_align: pos,
+          y_align: pos,
+          style_class: 'icon',
+          gicon: gicons.default,
+        })
+        btn.connect(
+          'notify::hover', () => void icon.set_gicon(btn.hover ? gicons.hover : gicons.default)
+        )
+        btn.connect(
+          'notify::pressed', () => void icon.set_gicon(btn.pressed ? gicons.active : gicons.default)
+        )
+
+        btn.set_child(icon)
+      } else {
+        const bin = new St.Bin({ style_class: 'icon', x_align: pos, y_align: pos })
+        btn.set_child(bin)
+      }
 
       btn.connect('clicked', () => {
         const target = global.unite.focusWindow
